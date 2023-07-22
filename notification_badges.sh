@@ -40,6 +40,13 @@ then
     apt-get install -y gnome-extensions
 fi
 
+# Check if gnome-extensions-extra is installed
+if ! command -v gnome-shell-extensions-extra &> /dev/null
+then
+    echo "gnome-shell-extensions-extra could not be found, installing..."
+    apt-get install -y gnome-shell-extensions-extra
+fi
+
 # Check if unzip is installed, if not, install it
 if ! command -v unzip &> /dev/null
 then
