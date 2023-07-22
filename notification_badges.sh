@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# Check if the script is run as user with root privileges suing sudo
+if [ "$EUID" -ne 0 ]
+  then echo "Please run with sudo privileges."
+  echo "If your user is not in the sudoers file, you can add it with:"
+  echo "echo '<your-username> ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers"
+  echo "Replace <your-username> with your actual username."
+  echo "After this, please log out and log back in to apply the changes."
+  exit
+fi
+
+# Check if curl is installed, if not, install it
+if ! command -v curl &> /dev/null
+then
+    echo "curl could not be found, installing it now..."
+    apt-get update
+    apt-get install curl -y
+fi
 # Check if the script is run as root
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root or use sudo"
