@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Check if the script is run as user with root privileges suing sudo
+# Check if the script is run as user with root privileges using sudo
 if [ "$EUID" -ne 0 ]
   then echo "Please run with sudo privileges."
   echo "If your user is not in the sudoers file, you can add it with:"
@@ -10,11 +10,19 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+# Get the username of the user who launched the sudo command
+original_user=$(who am i | awk '{print $1}')
+
+# Group all actions requiring sudo privileges
+echo "Performing actions requiring sudo privileges..."
+
+# Update package list
+apt-get update
+
 # Check if curl is installed, if not, install it
 if ! command -v curl &> /dev/null
 then
     echo "curl could not be found, installing it now..."
-    apt-get update
     apt-get install curl -y
 fi
 
@@ -22,43 +30,32 @@ fi
 if ! command -v dbus-x11 &> /dev/null
 then
     echo "dbus-x11 could not be found, installing it now..."
-    apt-get update
     apt-get install dbus-x11 -y
-fi
-
-
-# Check if the script is run as root
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as root or use sudo"
-  exit
 fi
 
 # Check if gnome-extensions is installed
 if ! command -v gnome-extensions &> /dev/null
 then
     echo "gnome-extensions could not be found, installing..."
-    apt-get update
     apt-get install -y gnome-extensions
+fi
+
+# Check if unzip is installed, if not, install it
+if ! command -v unzip &> /dev/null
+then
+    echo "unzip could not be found, installing it now..."
+    apt-get install unzip -y
 fi
 
 echo "Enter 'i' for installation or 'r' for removing/reversing changes"
 read choice
 
 if [ "$choice" = "i" ]; then
-    # Download ubuntu keyring package
-    wget http://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2021.03.26_all.deb
-
-    # Install ubuntu keyring package
-    dpkg -i ubuntu-keyring_2021.03.26_all.deb
-
-    # Backup current sources.list
-    cp /etc/apt/sources.list /etc/apt/sources.list.bak
-
-    # Add Ubuntu 22.04 repositories to sources.list
-    echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse" >> /etc/apt/sources.list
-    echo "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse" >> /etc/apt/sources.list
-    echo "deb http://archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse" >> /etc/apt/sources.list
-    echo "deb http://archive.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse" >> /etc/apt/sources.list
+    # Add Ubuntu 22.04 repositories to a separate sources.list file
+    echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse" > /etc/apt/sources.list.d/focal.list
+    echo "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse" >> /etc/apt/sources.list.d/focal.list
+    echo "deb http://archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse" >> /etc/apt/sources.list.d/focal.list
+    echo "deb http://archive.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse" >> /etc/apt/sources.list.d/focal.list
 
     # Update package list
     apt-get update
@@ -66,11 +63,15 @@ if [ "$choice" = "i" ]; then
     # Install libindicator7 library
     apt-get install -y libindicator7
 
-    # Restore original sources.list
-    mv /etc/apt/sources.list.bak /etc/apt/sources.list
+    # Remove the separate sources.list file
+    rm /etc/apt/sources.list.d/focal.list
 
     # Update package list
     apt-get update
+
+    # Run the rest of the script as the original user
+    echo "Performing actions not requiring sudo privileges..."
+    sudo -u $original_user bash << EOF
 
     # Download latest release of Dash to Dock
     wget $(curl -s https://api.github.com/repos/micheleg/dash-to-dock/releases/latest | grep 'browser_' | cut -d\" -f4)
@@ -83,6 +84,8 @@ if [ "$choice" = "i" ]; then
 
     # Print a message to reload the shell
     echo "Please reload the shell using 'Alt+F2 r Enter' to apply changes."
+
+EOF
 elif [ "$choice" = "r" ]; then
     # Disable the extension
     gnome-extensions disable dash-to-dock@micxgx.gmail.com
