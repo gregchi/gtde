@@ -17,6 +17,16 @@ then
     apt-get update
     apt-get install curl -y
 fi
+
+# Check if dbus-x11 is installed, if not, install it
+if ! command -v dbus-x11 &> /dev/null
+then
+    echo "dbus-x11 could not be found, installing it now..."
+    apt-get update
+    apt-get install dbus-x11 -y
+fi
+
+
 # Check if the script is run as root
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root or use sudo"
