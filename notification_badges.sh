@@ -10,6 +10,31 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+# Info about requirements
+echo "Following required packages will be installed:
+curl
+dbus-x11
+libnotify-bin
+libindicator7
+ubuntu-keyring
+gnome-extensions
+gnome-shell-extensions-extra
+dash-to-dock extension"
+
+
+# Ask the user if they want to continue
+read -p "Do you want to continue? (y/n) " answer
+
+case ${answer:0:1} in
+    y|Y )
+        echo "Continuing with the installation..."
+    ;;
+    * )
+        echo "Exiting the script..."
+        exit
+    ;;
+esac
+
 # Get the username of the user who launched the sudo command
 original_user=$(who am i | awk '{print $1}')
 
