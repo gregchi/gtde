@@ -14,41 +14,57 @@ then
     apt-get install -y gnome-extensions
 fi
 
-# Download ubuntu keyring package
-wget http://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2021.03.26_all.deb
+echo "Enter 'i' for installation or 'r' for removing/reversing changes"
+read choice
 
-# Install ubuntu keyring package
-dpkg -i ubuntu-keyring_2021.03.26_all.deb
+if [ "$choice" = "i" ]; then
+    # Download ubuntu keyring package
+    wget http://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2021.03.26_all.deb
 
-# Backup current sources.list
-cp /etc/apt/sources.list /etc/apt/sources.list.bak
+    # Install ubuntu keyring package
+    dpkg -i ubuntu-keyring_2021.03.26_all.deb
 
-# Add Ubuntu 22.04 repositories to sources.list
-echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse" >> /etc/apt/sources.list
-echo "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse" >> /etc/apt/sources.list
-echo "deb http://archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse" >> /etc/apt/sources.list
-echo "deb http://archive.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse" >> /etc/apt/sources.list
+    # Backup current sources.list
+    cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
-# Update package list
-apt-get update
+    # Add Ubuntu 22.04 repositories to sources.list
+    echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse" >> /etc/apt/sources.list
+    echo "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse" >> /etc/apt/sources.list
+    echo "deb http://archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse" >> /etc/apt/sources.list
+    echo "deb http://archive.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse" >> /etc/apt/sources.list
 
-# Install libindicator7 library
-apt-get install -y libindicator7
+    # Update package list
+    apt-get update
 
-# Restore original sources.list
-mv /etc/apt/sources.list.bak /etc/apt/sources.list
+    # Install libindicator7 library
+    apt-get install -y libindicator7
 
-# Update package list
-apt-get update
+    # Restore original sources.list
+    mv /etc/apt/sources.list.bak /etc/apt/sources.list
 
-# Download latest release of Dash to Dock
-wget $(curl -s https://api.github.com/repos/micheleg/dash-to-dock/releases/latest | grep 'browser_' | cut -d\" -f4)
+    # Update package list
+    apt-get update
 
-# Unzip the extension to the correct directory
-unzip dash-to-dock@micxgx.gmail.com.zip -d ~/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/
+    # Download latest release of Dash to Dock
+    wget $(curl -s https://api.github.com/repos/micheleg/dash-to-dock/releases/latest | grep 'browser_' | cut -d\" -f4)
 
-# Enable the extension
-gnome-extensions enable dash-to-dock@micxgx.gmail.com
+    # Unzip the extension to the correct directory
+    unzip dash-to-dock@micxgx.gmail.com.zip -d ~/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/
 
-# Print a message to reload the shell
-echo "Please reload the shell using 'Alt+F2 r Enter' to apply changes."
+    # Enable the extension
+    gnome-extensions enable dash-to-dock@micxgx.gmail.com
+
+    # Print a message to reload the shell
+    echo "Please reload the shell using 'Alt+F2 r Enter' to apply changes."
+elif [ "$choice" = "r" ]; then
+    # Disable the extension
+    gnome-extensions disable dash-to-dock@micxgx.gmail.com
+
+    # Remove the extension files
+    rm -rf ~/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/
+
+    # Print a message to reload the shell
+    echo "Please reload the shell using 'Alt+F2 r Enter' to apply changes."
+else
+    echo "Invalid choice"
+fi
