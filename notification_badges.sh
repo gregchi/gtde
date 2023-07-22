@@ -80,6 +80,9 @@ if [ "$choice" = "i" ]; then
     echo "Performing actions not requiring sudo privileges..."
     sudo -u $original_user bash << EOF
 
+    # Create target folder for the extension
+    mkdir -p ~/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/
+    
     # Download latest release of Dash to Dock
     wget $(curl -s https://api.github.com/repos/micheleg/dash-to-dock/releases/latest | grep 'browser_' | cut -d\" -f4)
 
