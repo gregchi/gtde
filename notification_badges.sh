@@ -33,6 +33,13 @@ then
     apt-get install dbus-x11 -y
 fi
 
+# Check if libnotify-bin is installed, if not, install it
+if ! command -v notify-send &> /dev/null
+then
+    echo "libnotify-bin could not be found, installing it now..."
+    apt-get install libnotify-bin -y
+fi
+
 # Check if gnome-extensions is installed
 if ! command -v gnome-extensions &> /dev/null
 then
